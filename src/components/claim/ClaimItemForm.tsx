@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -228,40 +229,6 @@ const ClaimItemForm: React.FC<ClaimItemFormProps> = ({ item, onClaimSuccess }) =
     setShowTipDialog(false);
     setStep("success");
     onClaimSuccess();
-  };
-  
-  const getVerificationFields = () => {
-    switch (item.type) {
-      case "id_card":
-        return [
-          { key: "name", label: "Full Name on ID", type: "text" },
-          { key: "idNumber", label: "ID Number", type: "text" },
-          { key: "dateOfBirth", label: "Date of Birth", type: "date" },
-        ];
-      case "credit_card":
-        return [
-          { key: "name", label: "Name on Card", type: "text" },
-          { key: "cardNumber", label: "Last 4 Digits of Card", type: "text" },
-        ];
-      case "phone":
-        return [
-          { key: "phoneNumber", label: "Phone Number", type: "text" },
-          { key: "phoneModel", label: "Phone Model (if known)", type: "text" },
-        ];
-      case "birth_certificate":
-        return [
-          { key: "name", label: "Full Name on Certificate", type: "text" },
-          { key: "dateOfBirth", label: "Date of Birth", type: "date" },
-        ];
-      default:
-        return [
-          { key: "description", label: "Describe the item", type: "text" },
-        ];
-    }
-  };
-  
-  const handleInputChange = (key: string, value: string) => {
-    setVerificationInfo((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
