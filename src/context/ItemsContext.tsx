@@ -64,7 +64,7 @@ export const ItemsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         description: item.description || "",
         foundDate: item.found_date,
         location: item.location,
-        extractedInfo: item.extracted_info,
+        extractedInfo: item.extracted_info as unknown as Item['extractedInfo'], // Type assertion
         contactInfo: item.contact_info,
         phoneNumber: item.phone_number,
         imageUrl: item.image_path,
@@ -134,12 +134,12 @@ export const ItemsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       // Transform the new item back to our interface and add to state
       const newItemWithId: Item = {
         id: data.id,
-        type: data.type,
+        type: data.type as "id_card" | "credit_card" | "phone" | "birth_certificate" | "other",
         itemName: data.item_name,
         description: data.description || "",
         foundDate: data.found_date,
         location: data.location,
-        extractedInfo: data.extracted_info,
+        extractedInfo: data.extracted_info as unknown as Item['extractedInfo'], // Type assertion
         contactInfo: data.contact_info,
         phoneNumber: data.phone_number,
         imageUrl: data.image_path,

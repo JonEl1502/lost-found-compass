@@ -97,7 +97,8 @@ const ClaimItemForm: React.FC<ClaimItemFormProps> = ({ item, onClaimSuccess }) =
     const extractedInfo = item.extractedInfo;
     
     for (const [key, value] of Object.entries(verificationInfo)) {
-      if (extractedInfo[key] && extractedInfo[key] !== value) {
+      if (extractedInfo[key as keyof typeof extractedInfo] && 
+          extractedInfo[key as keyof typeof extractedInfo] !== value) {
         isValid = false;
         break;
       }
@@ -211,7 +212,7 @@ const ClaimItemForm: React.FC<ClaimItemFormProps> = ({ item, onClaimSuccess }) =
       } else {
         throw new Error(result.ResponseDescription || "Payment failed");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error processing payment:", error);
       toast({
         title: "Payment Failed",
@@ -229,6 +230,40 @@ const ClaimItemForm: React.FC<ClaimItemFormProps> = ({ item, onClaimSuccess }) =
     onClaimSuccess();
   };
   
+  const getVerificationFields = () => {
+    switch (item.type) {
+      case "id_card":
+        return [
+          { key: "name", label: "Full Name on ID", type: "text" },
+          { key: "idNumber", label: "ID Number", type: "text" },
+          { key: "dateOfBirth", label: "Date of Birth", type: "date" },
+        ];
+      case "credit_card":
+        return [
+          { key: "name", label: "Name on Card", type: "text" },
+          { key: "cardNumber", label: "Last 4 Digits of Card", type: "text" },
+        ];
+      case "phone":
+        return [
+          { key: "phoneNumber", label: "Phone Number", type: "text" },
+          { key: "phoneModel", label: "Phone Model (if known)", type: "text" },
+        ];
+      case "birth_certificate":
+        return [
+          { key: "name", label: "Full Name on Certificate", type: "text" },
+          { key: "dateOfBirth", label: "Date of Birth", type: "date" },
+        ];
+      default:
+        return [
+          { key: "description", label: "Describe the item", type: "text" },
+        ];
+    }
+  };
+  
+  const handleInputChange = (key: string, value: string) => {
+    setVerificationInfo((prev) => ({ ...prev, [key]: value }));
+  };
+
   return (
     <Card className="w-full max-w-lg mx-auto">
       <CardHeader>

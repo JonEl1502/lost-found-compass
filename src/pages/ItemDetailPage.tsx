@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useItems } from "@/context/ItemsContext";
@@ -75,7 +74,7 @@ const ItemDetailPage = () => {
               description: data.description || "",
               foundDate: data.found_date,
               location: data.location,
-              extractedInfo: data.extracted_info,
+              extractedInfo: data.extracted_info as unknown as Item['extractedInfo'], // Type assertion
               contactInfo: data.contact_info,
               phoneNumber: data.phone_number,
               imageUrl: data.image_path,
