@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -37,7 +36,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Camera, Upload, MapPin, Phone, Shield, AlertCircle } from "lucide-react";
+import {
+  Camera, 
+  Upload, 
+  MapPin, 
+  Phone, 
+  Shield, 
+  AlertCircle 
+} from "lucide-react";
 import { Item } from "@/context/ItemsContext";
 
 const ReportItemPage = () => {
@@ -173,6 +179,7 @@ const ReportItemPage = () => {
       suggestedPickupLocations: formData.suggestedPickupLocations.length > 0 
         ? formData.suggestedPickupLocations 
         : null,
+      status: "pending"
     };
     
     // First, save to the local context
@@ -180,6 +187,7 @@ const ReportItemPage = () => {
     
     // Then save to Supabase
     try {
+      // Use the correct Supabase typing for insert
       const { error } = await supabase
         .from('items')
         .insert({
@@ -192,9 +200,10 @@ const ReportItemPage = () => {
           phone_number: itemData.phoneNumber,
           image_path: imagePath,
           extracted_info: itemData.extractedInfo,
-          suggested_pickup_locations: itemData.suggestedPickupLocations.length > 0 
-            ? itemData.suggestedPickupLocations 
+          suggested_pickup_locations: formData.suggestedPickupLocations.length > 0 
+            ? formData.suggestedPickupLocations 
             : null,
+          status: 'pending'
         });
         
       if (error) throw error;
@@ -222,7 +231,7 @@ const ReportItemPage = () => {
   const prevStep = () => {
     setStep(step - 1);
   };
-
+  
   const renderExtractedInfoFields = () => {
     switch (itemType) {
       case "id_card":

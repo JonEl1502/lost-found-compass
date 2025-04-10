@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 // Define types for our items
@@ -21,6 +20,7 @@ export interface Item {
   imageUrl?: string | null;
   suggestedPickupLocations?: string[] | null;
   createdAt: string;
+  status?: string;
 }
 
 interface ItemsContextType {
@@ -47,6 +47,7 @@ const initialItems: Item[] = [
     },
     contactInfo: "Lost and Found Office, Central Park",
     createdAt: "2025-04-09T10:30:00Z",
+    status: "pending",
   },
   {
     id: "2",
@@ -61,6 +62,7 @@ const initialItems: Item[] = [
     },
     contactInfo: "Starbucks Manager, 5th Avenue",
     createdAt: "2025-04-07T15:45:00Z",
+    status: "pending",
   },
   {
     id: "3",
@@ -74,6 +76,7 @@ const initialItems: Item[] = [
     },
     contactInfo: "Subway Lost and Found Office",
     createdAt: "2025-04-06T18:20:00Z",
+    status: "pending",
   },
 ];
 
