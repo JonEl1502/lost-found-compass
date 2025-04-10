@@ -176,6 +176,9 @@ const ClaimItemForm: React.FC<ClaimItemFormProps> = ({ item, onClaimSuccess }) =
     try {
       setIsTipping(true);
       
+      // Get the current session
+      const { data: sessionData } = await supabase.auth.getSession();
+      
       // Call the M-Pesa payment function
       const response = await fetch(
         "https://agyxtvarmnpxqvsdiejm.supabase.co/functions/v1/mpesa-payment",
@@ -183,7 +186,7 @@ const ClaimItemForm: React.FC<ClaimItemFormProps> = ({ item, onClaimSuccess }) =
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabase.auth.getSession()?.data?.session?.access_token}`,
+            "Authorization": `Bearer ${sessionData.session?.access_token}`,
           },
           body: JSON.stringify({
             phoneNumber,
