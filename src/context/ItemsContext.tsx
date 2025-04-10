@@ -17,7 +17,9 @@ export interface Item {
     phoneNumber?: string; // For phones
   };
   contactInfo: string;
-  imageUrl?: string;
+  phoneNumber?: string | null;
+  imageUrl?: string | null;
+  suggestedPickupLocations?: string[] | null;
   createdAt: string;
 }
 

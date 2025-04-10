@@ -9,7 +9,101 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      claims: {
+        Row: {
+          claim_date: string | null
+          id: string
+          item_id: string
+          rating: number | null
+          referral: boolean | null
+          status: string
+          tip_amount: number | null
+          tip_message: string | null
+          verification_info: Json
+        }
+        Insert: {
+          claim_date?: string | null
+          id?: string
+          item_id: string
+          rating?: number | null
+          referral?: boolean | null
+          status?: string
+          tip_amount?: number | null
+          tip_message?: string | null
+          verification_info: Json
+        }
+        Update: {
+          claim_date?: string | null
+          id?: string
+          item_id?: string
+          rating?: number | null
+          referral?: boolean | null
+          status?: string
+          tip_amount?: number | null
+          tip_message?: string | null
+          verification_info?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claims_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          contact_info: string
+          created_at: string | null
+          description: string | null
+          extracted_info: Json
+          found_date: string
+          id: string
+          image_path: string | null
+          item_name: string
+          location: string
+          phone_number: string | null
+          status: string
+          suggested_pickup_locations: string[] | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          contact_info: string
+          created_at?: string | null
+          description?: string | null
+          extracted_info?: Json
+          found_date: string
+          id?: string
+          image_path?: string | null
+          item_name: string
+          location: string
+          phone_number?: string | null
+          status?: string
+          suggested_pickup_locations?: string[] | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          contact_info?: string
+          created_at?: string | null
+          description?: string | null
+          extracted_info?: Json
+          found_date?: string
+          id?: string
+          image_path?: string | null
+          item_name?: string
+          location?: string
+          phone_number?: string | null
+          status?: string
+          suggested_pickup_locations?: string[] | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
