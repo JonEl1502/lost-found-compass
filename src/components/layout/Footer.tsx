@@ -8,9 +8,9 @@ const Footer = () => {
       <div className="container py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-lg font-semibold mb-4">FindMyItem</h3>
+            <h3 className="text-lg font-semibold mb-4">FindMyItem Kenya</h3>
             <p className="text-sm text-muted-foreground">
-              Helping reunite people with their lost items since 2025.
+              Reconnecting Kenyans with their lost items since 2025.
             </p>
           </div>
           <div>
@@ -48,16 +48,16 @@ const Footer = () => {
               For support or inquiries, please contact us at:
               <br />
               <a 
-                href="mailto:support@findmyitem.example" 
+                href="mailto:support@findmyitemkenya.co.ke" 
                 className="text-primary hover:underline"
               >
-                support@findmyitem.example
+                support@findmyitemkenya.co.ke
               </a>
             </p>
           </div>
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© 2025 FindMyItem. All rights reserved.</p>
+          <p>© 2025 FindMyItem Kenya. All rights reserved.</p>
         </div>
       </div>
     </footer>

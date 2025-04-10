@@ -18,10 +18,10 @@ const HomePage = () => {
           <div className="flex flex-col items-center space-y-4 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Lost Something Important?
+                Lost Something Important in Kenya?
               </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                We help reunite people with their lost items. Search for your lost documents or report found items.
+                We help Kenyans reconnect with their lost items. Search for your lost documents or report found items from across the country.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -48,7 +48,7 @@ const HomePage = () => {
           <div className="text-center space-y-2 mb-12">
             <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">How It Works</h2>
             <p className="mx-auto max-w-[600px] text-muted-foreground">
-              Our platform connects people who have found items with those who have lost them.
+              Our platform connects Kenyans who have found items with those who have lost them.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -58,7 +58,7 @@ const HomePage = () => {
               </div>
               <h3 className="text-lg font-medium">Report Found Items</h3>
               <p className="text-muted-foreground text-sm">
-                Anonymously report any documents or items you've found with relevant details.
+                Anonymously report any documents or items you've found with relevant details, from Nairobi to Mombasa and beyond.
               </p>
             </div>
             <div className="flex flex-col items-center text-center space-y-3">
@@ -67,7 +67,7 @@ const HomePage = () => {
               </div>
               <h3 className="text-lg font-medium">Search Lost Items</h3>
               <p className="text-muted-foreground text-sm">
-                Search our database using details of your lost documents or items.
+                Search our nationwide database using details of your lost documents or items.
               </p>
             </div>
             <div className="flex flex-col items-center text-center space-y-3">
@@ -76,7 +76,7 @@ const HomePage = () => {
               </div>
               <h3 className="text-lg font-medium">Retrieve Your Items</h3>
               <p className="text-muted-foreground text-sm">
-                Find out where your lost items are located and get them back safely.
+                Find out where your lost items are located across Kenya and get them back safely.
               </p>
             </div>
           </div>
@@ -90,7 +90,7 @@ const HomePage = () => {
             <div>
               <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Recently Found Items</h2>
               <p className="text-muted-foreground">
-                Here are some of the recently reported found items.
+                Here are some of the recently reported found items across Kenya.
               </p>
             </div>
             <Link to="/search" className="mt-4 md:mt-0">
@@ -113,7 +113,7 @@ const HomePage = () => {
             <div className="space-y-4">
               <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl">Trust & Privacy</h2>
               <p className="text-muted-foreground">
-                We prioritize your privacy and the security of sensitive information. Our platform is designed to protect personal details while helping reunite people with their lost items.
+                We prioritize your privacy and the security of sensitive information. Our platform is designed to protect personal details while helping Kenyans reconnect with their lost items.
               </p>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
@@ -136,7 +136,7 @@ const HomePage = () => {
                   <Shield className="h-12 w-12 text-primary mx-auto" />
                   <h3 className="text-xl font-medium">Your Privacy Matters</h3>
                   <p className="text-sm text-muted-foreground">
-                    We only extract and store the minimum information needed to help people find their lost items, while keeping sensitive details protected.
+                    We only extract and store the minimum information needed to help Kenyans find their lost items, while keeping sensitive details protected.
                   </p>
                 </div>
               </div>

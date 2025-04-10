@@ -15,6 +15,9 @@ import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Add title to document
+document.title = "FindMyItem Kenya - Lost & Found";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
