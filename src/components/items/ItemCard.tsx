@@ -27,12 +27,24 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     }
   };
 
+  // Function to format values for display
+  const formatValue = (value: string | undefined, type: string): string => {
+    if (!value) return "N/A";
+    
+    // For sensitive information, partially mask it
+    if (type === "idNumber" || type === "cardNumber" || type === "phoneNumber") {
+      return `...${value.slice(-4)}`;
+    }
+    
+    return value;
+  };
+
   return (
     <Card className="h-full hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-medium">{item.itemName}</CardTitle>
-          <Badge variant="outline" className="flex items-center">
+          <Badge variant={item.status === "pending" ? "default" : "outline"} className="flex items-center">
             {getItemIcon()}
             {item.type.replace("_", " ")}
           </Badge>
@@ -57,19 +69,19 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           <h4 className="text-sm font-medium mb-2">Item Details:</h4>
           <ul className="space-y-1 text-xs text-muted-foreground">
             {item.extractedInfo.name && (
-              <li>Name: {item.extractedInfo.name}</li>
+              <li>Name: {formatValue(item.extractedInfo.name, "name")}</li>
             )}
             {item.extractedInfo.idNumber && (
-              <li>ID: {item.extractedInfo.idNumber}</li>
+              <li>ID: {formatValue(item.extractedInfo.idNumber, "idNumber")}</li>
             )}
             {item.extractedInfo.dateOfBirth && (
-              <li>DOB: {item.extractedInfo.dateOfBirth}</li>
+              <li>DOB: {formatValue(item.extractedInfo.dateOfBirth, "dateOfBirth")}</li>
             )}
             {item.extractedInfo.cardNumber && (
-              <li>Card: {item.extractedInfo.cardNumber}</li>
+              <li>Card: {formatValue(item.extractedInfo.cardNumber, "cardNumber")}</li>
             )}
             {item.extractedInfo.phoneNumber && (
-              <li>Phone: {item.extractedInfo.phoneNumber}</li>
+              <li>Phone: {formatValue(item.extractedInfo.phoneNumber, "phoneNumber")}</li>
             )}
           </ul>
         </div>

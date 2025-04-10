@@ -42,7 +42,8 @@ import {
   MapPin, 
   Phone, 
   Shield, 
-  AlertCircle 
+  AlertCircle,
+  Loader2
 } from "lucide-react";
 import { Item } from "@/context/ItemsContext";
 
@@ -74,6 +75,7 @@ const ReportItemPage = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [currentPickupLocation, setCurrentPickupLocation] = useState("");
   const [showImageGuidelines, setShowImageGuidelines] = useState(false);
 
@@ -157,70 +159,58 @@ const ReportItemPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    let imagePath = null;
-    if (imageFile) {
-      imagePath = await uploadImage();
-      if (!imagePath && imageFile) {
-        // If upload failed and user had an image, show error but don't proceed
-        return;
-      }
-    }
-    
-    const itemData: Omit<Item, "id" | "createdAt"> = {
-      type: itemType,
-      itemName: formData.itemName,
-      description: formData.description,
-      foundDate: formData.foundDate,
-      location: formData.location,
-      contactInfo: formData.contactInfo,
-      extractedInfo: formData.extractedInfo,
-      phoneNumber: formData.phoneNumber || null,
-      imageUrl: imagePath,
-      suggestedPickupLocations: formData.suggestedPickupLocations.length > 0 
-        ? formData.suggestedPickupLocations 
-        : null,
-      status: "pending"
-    };
-    
-    // First, save to the local context
-    addItem(itemData);
-    
-    // Then save to Supabase
     try {
-      // Use the correct Supabase typing for insert
-      const { error } = await supabase
-        .from('items')
-        .insert({
-          type: itemData.type,
-          item_name: itemData.itemName,
-          description: itemData.description,
-          found_date: itemData.foundDate,
-          location: itemData.location,
-          contact_info: itemData.contactInfo,
-          phone_number: itemData.phoneNumber,
-          image_path: imagePath,
-          extracted_info: itemData.extractedInfo,
-          suggested_pickup_locations: formData.suggestedPickupLocations.length > 0 
-            ? formData.suggestedPickupLocations 
-            : null,
-          status: 'pending'
+      setSubmitting(true);
+      
+      let imagePath = null;
+      if (imageFile) {
+        imagePath = await uploadImage();
+        if (!imagePath && imageFile) {
+          // If upload failed and user had an image, show error but don't proceed
+          setSubmitting(false);
+          return;
+        }
+      }
+      
+      const itemData: Omit<Item, "id" | "createdAt"> = {
+        type: itemType,
+        itemName: formData.itemName,
+        description: formData.description,
+        foundDate: formData.foundDate,
+        location: formData.location,
+        contactInfo: formData.contactInfo,
+        extractedInfo: formData.extractedInfo,
+        phoneNumber: formData.phoneNumber || null,
+        imageUrl: imagePath,
+        suggestedPickupLocations: formData.suggestedPickupLocations.length > 0 
+          ? formData.suggestedPickupLocations 
+          : null,
+        status: "pending"
+      };
+      
+      // Add item through context (which now saves to Supabase)
+      const itemId = await addItem(itemData);
+      
+      if (itemId) {
+        toast({
+          title: "Item reported successfully",
+          description: "Thank you for helping someone find their lost item.",
         });
         
-      if (error) throw error;
+        navigate("/");
+      } else {
+        throw new Error("Failed to add item");
+      }
       
-      toast({
-        title: "Item reported successfully",
-        description: "Thank you for helping someone find their lost item.",
-      });
-      
-      navigate("/");
     } catch (error) {
-      console.error('Error saving to Supabase:', error);
+      console.error('Error submitting item:', error);
       toast({
         title: "Error saving item",
-        description: "The item was saved locally but not to the database.",
+        description: "Failed to save the item. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -637,8 +627,18 @@ const ReportItemPage = () => {
                 <Button variant="outline" onClick={prevStep}>
                   Back
                 </Button>
-                <Button onClick={handleSubmit} disabled={uploading}>
-                  {uploading ? "Uploading..." : "Submit Report"}
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={uploading || submitting}
+                >
+                  {(uploading || submitting) ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {uploading ? "Uploading..." : "Submitting..."}
+                    </>
+                  ) : (
+                    "Submit Report"
+                  )}
                 </Button>
               </CardFooter>
             </TabsContent>

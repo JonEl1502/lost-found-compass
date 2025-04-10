@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useItems } from "@/context/ItemsContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,15 +10,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import ItemCard from "@/components/items/ItemCard";
 
 const SearchPage = () => {
-  const { items, searchItems } = useItems();
+  const { items, searchItems, isLoading, error, refreshItems } = useItems();
   const [searchQuery, setSearchQuery] = useState("");
   const [itemType, setItemType] = useState<string | undefined>(undefined);
   const [searchResults, setSearchResults] = useState(items);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Update search results when items change
+  useEffect(() => {
+    if (!hasSearched) {
+      setSearchResults(items);
+    }
+  }, [items, hasSearched]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +46,21 @@ const SearchPage = () => {
     setItemType(undefined);
     setSearchResults(items);
     setHasSearched(false);
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshItems();
+    setIsRefreshing(false);
+    
+    // If search was already performed, re-run it with new data
+    if (hasSearched) {
+      const results = searchItems(searchQuery);
+      const filteredResults = itemType 
+        ? results.filter(item => item.type === itemType)
+        : results;
+      setSearchResults(filteredResults);
+    }
   };
 
   return (
@@ -89,6 +112,18 @@ const SearchPage = () => {
                 Clear
               </Button>
             )}
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="mr-auto"
+            >
+              {isRefreshing ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Refresh
+            </Button>
             <Button type="submit">
               <Search className="h-4 w-4 mr-2" />
               Search
@@ -101,11 +136,21 @@ const SearchPage = () => {
             <h2 className="text-xl font-semibold">
               {hasSearched
                 ? `Search Results (${searchResults.length})`
-                : "All Items"}
+                : `All Items (${items.length})`}
             </h2>
           </div>
 
-          {searchResults.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12 bg-muted/50 rounded-lg">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <h3 className="text-lg font-medium">Loading items...</h3>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 bg-muted/50 rounded-lg text-destructive">
+              <h3 className="text-lg font-medium mb-2">Error loading items</h3>
+              <p className="text-muted-foreground">{error}</p>
+            </div>
+          ) : searchResults.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {searchResults.map((item) => (
                 <ItemCard key={item.id} item={item} />

@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 // Define types for our items
 export interface Item {
@@ -25,71 +27,134 @@ export interface Item {
 
 interface ItemsContextType {
   items: Item[];
-  addItem: (item: Omit<Item, "id" | "createdAt">) => void;
+  addItem: (item: Omit<Item, "id" | "createdAt">) => Promise<string | null>;
   searchItems: (query: string) => Item[];
+  isLoading: boolean;
+  error: string | null;
+  refreshItems: () => Promise<void>;
 }
 
 const ItemsContext = createContext<ItemsContextType | undefined>(undefined);
 
-// Sample data
-const initialItems: Item[] = [
-  {
-    id: "1",
-    type: "id_card",
-    itemName: "National ID Card",
-    description: "Found a national ID card near Central Park",
-    foundDate: "2025-04-08",
-    location: "Central Park, New York",
-    extractedInfo: {
-      name: "John Smith",
-      idNumber: "ID123456",
-      dateOfBirth: "1990-05-15",
-    },
-    contactInfo: "Lost and Found Office, Central Park",
-    createdAt: "2025-04-09T10:30:00Z",
-    status: "pending",
-  },
-  {
-    id: "2",
-    type: "credit_card",
-    itemName: "Visa Credit Card",
-    description: "Found a Visa credit card at Starbucks",
-    foundDate: "2025-04-07",
-    location: "Starbucks, 5th Avenue, New York",
-    extractedInfo: {
-      name: "Jane Doe",
-      cardNumber: "XXXX-XXXX-XXXX-1234",
-    },
-    contactInfo: "Starbucks Manager, 5th Avenue",
-    createdAt: "2025-04-07T15:45:00Z",
-    status: "pending",
-  },
-  {
-    id: "3",
-    type: "phone",
-    itemName: "iPhone 15",
-    description: "Found an iPhone 15 on the subway",
-    foundDate: "2025-04-06",
-    location: "Subway Line A, 14th Street Station",
-    extractedInfo: {
-      phoneNumber: "XXX-XXX-1234",
-    },
-    contactInfo: "Subway Lost and Found Office",
-    createdAt: "2025-04-06T18:20:00Z",
-    status: "pending",
-  },
-];
-
 export const ItemsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<Item[]>(initialItems);
+  const [items, setItems] = useState<Item[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const addItem = (newItem: Omit<Item, "id" | "createdAt">) => {
-    const item: Item = {
-      ...newItem,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
+  // Function to fetch items from Supabase
+  const fetchItems = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        throw error;
+      }
+      
+      // Transform Supabase data to match our Item interface
+      const transformedItems: Item[] = data.map(item => ({
+        id: item.id,
+        type: item.type as "id_card" | "credit_card" | "phone" | "birth_certificate" | "other",
+        itemName: item.item_name,
+        description: item.description || "",
+        foundDate: item.found_date,
+        location: item.location,
+        extractedInfo: item.extracted_info,
+        contactInfo: item.contact_info,
+        phoneNumber: item.phone_number,
+        imageUrl: item.image_path,
+        suggestedPickupLocations: item.suggested_pickup_locations,
+        createdAt: item.created_at,
+        status: item.status
+      }));
+      
+      setItems(transformedItems);
+    } catch (err) {
+      console.error("Error fetching items:", err);
+      setError("Failed to load items. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch items on initial load
+  useEffect(() => {
+    fetchItems();
+    
+    // Set up a real-time subscription for items
+    const itemsSubscription = supabase
+      .channel('public:items')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'items' 
+      }, payload => {
+        console.log('Change received!', payload);
+        fetchItems();
+      })
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(itemsSubscription);
     };
-    setItems((prevItems) => [...prevItems, item]);
+  }, []);
+
+  const addItem = async (newItem: Omit<Item, "id" | "createdAt">) => {
+    try {
+      // Transform the item to match Supabase schema
+      const supabaseItem = {
+        type: newItem.type,
+        item_name: newItem.itemName,
+        description: newItem.description,
+        found_date: newItem.foundDate,
+        location: newItem.location,
+        contact_info: newItem.contactInfo,
+        phone_number: newItem.phoneNumber,
+        image_path: newItem.imageUrl,
+        extracted_info: newItem.extractedInfo,
+        suggested_pickup_locations: newItem.suggestedPickupLocations,
+        status: newItem.status || 'pending'
+      };
+      
+      const { data, error } = await supabase
+        .from('items')
+        .insert(supabaseItem)
+        .select()
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+      
+      // Transform the new item back to our interface and add to state
+      const newItemWithId: Item = {
+        id: data.id,
+        type: data.type,
+        itemName: data.item_name,
+        description: data.description || "",
+        foundDate: data.found_date,
+        location: data.location,
+        extractedInfo: data.extracted_info,
+        contactInfo: data.contact_info,
+        phoneNumber: data.phone_number,
+        imageUrl: data.image_path,
+        suggestedPickupLocations: data.suggested_pickup_locations,
+        createdAt: data.created_at,
+        status: data.status
+      };
+      
+      setItems((prevItems) => [newItemWithId, ...prevItems]);
+      return data.id;
+    } catch (err) {
+      console.error("Error adding item:", err);
+      setError("Failed to add item. Please try again.");
+      return null;
+    }
   };
 
   const searchItems = (query: string): Item[] => {
@@ -118,8 +183,12 @@ export const ItemsProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     });
   };
 
+  const refreshItems = async () => {
+    await fetchItems();
+  };
+
   return (
-    <ItemsContext.Provider value={{ items, addItem, searchItems }}>
+    <ItemsContext.Provider value={{ items, addItem, searchItems, isLoading, error, refreshItems }}>
       {children}
     </ItemsContext.Provider>
   );

@@ -1,7 +1,8 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useItems } from "@/context/ItemsContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,24 +25,116 @@ import {
   User,
   CalendarDays,
   Hash,
+  Loader2,
 } from "lucide-react";
 import ClaimItemForm from "@/components/claim/ClaimItemForm";
+import { Item } from "@/context/ItemsContext";
 
 const ItemDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { items } = useItems();
+  const { items, refreshItems } = useItems();
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimed, setClaimed] = useState(false);
+  const [item, setItem] = useState<Item | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const item = items.find((item) => item.id === id);
+  // Fetch the specific item from Supabase
+  useEffect(() => {
+    const fetchItem = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // First try to find it in the context
+        const contextItem = items.find((item) => item.id === id);
+        
+        if (contextItem) {
+          setItem(contextItem);
+          // Check if it's already claimed
+          setClaimed(contextItem.status === "claimed" || contextItem.status === "pre-claimed");
+        } else {
+          // If not in context, fetch from Supabase
+          const { data, error } = await supabase
+            .from('items')
+            .select('*')
+            .eq('id', id)
+            .single();
+            
+          if (error) throw error;
+          
+          if (data) {
+            // Transform to match our Item interface
+            const transformedItem: Item = {
+              id: data.id,
+              type: data.type as "id_card" | "credit_card" | "phone" | "birth_certificate" | "other",
+              itemName: data.item_name,
+              description: data.description || "",
+              foundDate: data.found_date,
+              location: data.location,
+              extractedInfo: data.extracted_info,
+              contactInfo: data.contact_info,
+              phoneNumber: data.phone_number,
+              imageUrl: data.image_path,
+              suggestedPickupLocations: data.suggested_pickup_locations,
+              createdAt: data.created_at,
+              status: data.status
+            };
+            
+            setItem(transformedItem);
+            // Check if it's already claimed
+            setClaimed(data.status === "claimed" || data.status === "pre-claimed");
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching item:", err);
+        setError("Failed to load item details. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchItem();
+    
+    // Set up real-time subscription for this specific item
+    const itemSubscription = supabase
+      .channel(`item-${id}`)
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'items',
+        filter: `id=eq.${id}`
+      }, payload => {
+        console.log('Item updated:', payload);
+        fetchItem();
+      })
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(itemSubscription);
+    };
+  }, [id, items]);
 
-  if (!item) {
+  // If loading, show loading indicator
+  if (isLoading) {
+    return (
+      <div className="container py-16 text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <h1 className="text-2xl font-bold mb-4">Loading item details...</h1>
+      </div>
+    );
+  }
+
+  // If error or item not found
+  if (error || !item) {
     return (
       <div className="container py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Item Not Found</h1>
         <p className="text-muted-foreground mb-8">
-          The item you are looking for does not exist or has been removed.
+          {error || "The item you are looking for does not exist or has been removed."}
         </p>
         <Button asChild>
           <Link to="/search">Back to Search</Link>
@@ -66,9 +159,11 @@ const ItemDetailPage = () => {
     }
   };
   
-  const handleClaimSuccess = () => {
+  const handleClaimSuccess = async () => {
     setClaimed(true);
     setIsClaiming(false);
+    // Refresh items to get updated status
+    await refreshItems();
   };
 
   // If the user is in claiming mode, show the claim form
@@ -111,7 +206,10 @@ const ItemDetailPage = () => {
                 <CardDescription>{item.description}</CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={item.status === "pending" ? "default" : "outline"} className="self-start md:self-auto flex items-center whitespace-nowrap">
+                <Badge 
+                  variant={item.status === "pending" ? "default" : "outline"} 
+                  className="self-start md:self-auto flex items-center whitespace-nowrap"
+                >
                   {item.status === "pending" ? "Available" : item.status === "pre-claimed" ? "Being Claimed" : "Claimed"}
                 </Badge>
                 <Badge className="self-start md:self-auto flex items-center whitespace-nowrap">
