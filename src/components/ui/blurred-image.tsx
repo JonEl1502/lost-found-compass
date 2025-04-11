@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BlurredImageProps {
   src: string;
@@ -17,6 +18,17 @@ const BlurredImage: React.FC<BlurredImageProps> = ({
 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // Full Supabase storage URL for public bucket
+  const getFullImageUrl = (imagePath: string) => {
+    // Check if the URL is already complete
+    if (imagePath.startsWith("http")) {
+      return imagePath;
+    }
+    
+    // If not, construct the full Supabase storage URL
+    return `https://agyxtvarmnpxqvsdiejm.supabase.co/storage/v1/object/public/document_images/${imagePath}`;
+  };
 
   // Get blur overlay based on item type
   const getBlurOverlay = () => {
@@ -63,7 +75,8 @@ const BlurredImage: React.FC<BlurredImageProps> = ({
     <div className={`relative overflow-hidden ${className}`}>
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-secondary/20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Skeleton className="h-full w-full" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary absolute" />
         </div>
       )}
       
@@ -74,14 +87,16 @@ const BlurredImage: React.FC<BlurredImageProps> = ({
       )}
       
       <img
-        src={src}
+        src={getFullImageUrl(src)}
         alt={alt}
         className="max-w-full h-auto object-contain rounded-md"
         onLoad={() => setLoading(false)}
-        onError={() => {
+        onError={(e) => {
+          console.error("Image failed to load:", e);
           setLoading(false);
           setError(true);
         }}
+        style={{ display: loading || error ? 'none' : 'block' }}
       />
       
       {!loading && !error && getBlurOverlay()}

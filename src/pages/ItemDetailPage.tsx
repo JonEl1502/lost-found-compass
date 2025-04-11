@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useItems } from "@/context/ItemsContext";
@@ -25,6 +26,7 @@ import {
   CalendarDays,
   Hash,
   Loader2,
+  Image as ImageIcon,
 } from "lucide-react";
 import ClaimItemForm from "@/components/claim/ClaimItemForm";
 import { Item } from "@/context/ItemsContext";
@@ -306,7 +308,7 @@ const ItemDetailPage = () => {
                 <h3 className="font-medium mb-2">Item Image</h3>
                 <div className="bg-secondary/20 p-4 rounded-md">
                   <BlurredImage
-                    src={`https://agyxtvarmnpxqvsdiejm.supabase.co/storage/v1/object/public/document_images/${item.imageUrl}`}
+                    src={item.imageUrl}
                     alt={item.itemName}
                     itemType={item.type}
                     className="max-h-64 mx-auto"
@@ -315,6 +317,13 @@ const ItemDetailPage = () => {
                     Sensitive information is blurred for security.
                   </p>
                 </div>
+              </div>
+            )}
+
+            {!item.imageUrl && (
+              <div className="mt-4 bg-secondary/20 p-8 rounded-md flex flex-col items-center justify-center">
+                <ImageIcon className="h-12 w-12 text-muted-foreground mb-2 opacity-50" />
+                <p className="text-sm text-muted-foreground">No image available for this item</p>
               </div>
             )}
 
