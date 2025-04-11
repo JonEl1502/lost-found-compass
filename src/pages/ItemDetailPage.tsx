@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import ClaimItemForm from "@/components/claim/ClaimItemForm";
 import { Item } from "@/context/ItemsContext";
+import BlurredImage from "@/components/ui/blurred-image";
 
 const ItemDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -304,13 +305,14 @@ const ItemDetailPage = () => {
               <div className="mt-4">
                 <h3 className="font-medium mb-2">Item Image</h3>
                 <div className="bg-secondary/20 p-4 rounded-md">
-                  <img 
-                    src={`https://agyxtvarmnpxqvsdiejm.supabase.co/storage/v1/object/public/document_images/${item.imageUrl}`} 
-                    alt={item.itemName} 
-                    className="max-h-64 mx-auto object-contain rounded-md"
+                  <BlurredImage
+                    src={`https://agyxtvarmnpxqvsdiejm.supabase.co/storage/v1/object/public/document_images/${item.imageUrl}`}
+                    alt={item.itemName}
+                    itemType={item.type}
+                    className="max-h-64 mx-auto"
                   />
                   <p className="text-xs text-center text-muted-foreground mt-2">
-                    Note: Sensitive information is blurred for security.
+                    Sensitive information is blurred for security.
                   </p>
                 </div>
               </div>

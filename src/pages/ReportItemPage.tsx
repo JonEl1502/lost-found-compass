@@ -46,6 +46,7 @@ import {
   Loader2
 } from "lucide-react";
 import { Item } from "@/context/ItemsContext";
+import BlurredImage from "@/components/ui/blurred-image";
 
 const ReportItemPage = () => {
   const navigate = useNavigate();
@@ -470,9 +471,10 @@ const ReportItemPage = () => {
                     <div className="flex items-center justify-center border border-dashed border-input rounded-md p-6">
                       {imagePreview ? (
                         <div className="text-center">
-                          <img 
+                          <BlurredImage 
                             src={imagePreview} 
-                            alt="Preview" 
+                            alt="Item Preview" 
+                            itemType={itemType}
                             className="mx-auto max-h-40 rounded-md mb-2" 
                           />
                           <Button
