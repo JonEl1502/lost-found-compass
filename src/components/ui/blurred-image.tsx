@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,6 +22,10 @@ const BlurredImage: React.FC<BlurredImageProps> = ({
   // Full Supabase storage URL for public bucket
   const getFullImageUrl = (imagePath: string) => {
     // Check if the URL is already complete
+    if (!imagePath) {
+      return "";
+    }
+    
     if (imagePath.startsWith("http")) {
       return imagePath;
     }
@@ -71,6 +75,10 @@ const BlurredImage: React.FC<BlurredImageProps> = ({
     }
   };
 
+  // Debug logging for image path
+  console.log("Image path:", src);
+  console.log("Full image URL:", getFullImageUrl(src));
+
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {loading && (
@@ -86,20 +94,22 @@ const BlurredImage: React.FC<BlurredImageProps> = ({
         </div>
       )}
       
-      <img
-        src={getFullImageUrl(src)}
-        alt={alt}
-        className="max-w-full h-auto object-contain rounded-md"
-        onLoad={() => setLoading(false)}
-        onError={(e) => {
-          console.error("Image failed to load:", e);
-          setLoading(false);
-          setError(true);
-        }}
-        style={{ display: loading || error ? 'none' : 'block' }}
-      />
+      {src && (
+        <img
+          src={getFullImageUrl(src)}
+          alt={alt}
+          className="max-w-full h-auto object-contain rounded-md"
+          onLoad={() => setLoading(false)}
+          onError={(e) => {
+            console.error("Image failed to load:", e);
+            setLoading(false);
+            setError(true);
+          }}
+          style={{ display: loading || error ? 'none' : 'block' }}
+        />
+      )}
       
-      {!loading && !error && getBlurOverlay()}
+      {src && !loading && !error && getBlurOverlay()}
       
       <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
         Sensitive data blurred
